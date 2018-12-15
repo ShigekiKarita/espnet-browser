@@ -1,3 +1,17 @@
+"""
+ESPnet experiment browser
+
+TODO:
+- auto reload when expdir/results/log changed
+- color label for attention
+- search function for all/conf/attention
+- user-defined epoch for acc dashboard
+- loss/cer/wer dashboard
+- user-defined epoch for attention
+- json, plot, html download
+- chart.js zoom https://github.com/chartjs/chartjs-plugin-zoom
+"""
+
 import argparse
 import flask
 from flask import Flask, render_template, jsonify
@@ -58,8 +72,8 @@ class Results:
                     "lineTension": 0,
                     "backgroundColor": 'transparent',
                     "borderColor": self.color,
-                    "borderWidth": 4,
-                    "borderDash": [4, 4],  # for dash line: - - -
+                    "borderWidth": 2,
+                    "borderDash": [2, 2],  # for dash line: - - -
                     "pointBackgroundColor": self.color # '#007bff'
                 },
                 {
@@ -68,7 +82,7 @@ class Results:
                     "lineTension": 0,
                     "backgroundColor": 'transparent',
                     "borderColor": self.color,
-                    "borderWidth": 4,
+                    "borderWidth": 2,
                     "pointBackgroundColor": self.color
                 }
             ]}
@@ -86,6 +100,9 @@ class Results:
         from os.path import basename
         from base64 import b64encode
         d = dict()
+        if "epoch" not in self.config:
+            app.logger.warning("no epoch at " + self.label)
+            return d
         for a in sorted(self.atts):
             if "ep.%d." % self.config["epoch"] in a and "src_attn" in a:
                 b = b64encode(open(a, "rb").read()).decode('utf-8')
@@ -103,8 +120,8 @@ def str2color(s, theme=color_themes[-1]):
     """
     import hashlib
     import matplotlib.pyplot as plt
-    hash = int(hashlib.md5(s.encode('utf-8')).hexdigest(), 16)
-    f = hash / 2 ** 128
+    hash = int(hashlib.sha512(s.encode('utf-8')).hexdigest(), 16)
+    f = hash / 2 ** 512
     rgb = plt.cm.get_cmap(theme)(f)
     return mpl.colors.rgb2hex(rgb)
 
@@ -117,7 +134,10 @@ def build_conf_table(results_list, conf_keys):
     conf_table += "</tr></thead>"
     conf_table += "<tbody>"
     for r in results_list:
-        conf_table += r.conf(conf_keys)
+        try:
+            conf_table += r.conf(conf_keys)
+        except KeyError as e:
+            app.logger.warning(r.label + " has KeyError {}".format(e))
     conf_table += "</tbody>"
     return conf_table
 
@@ -141,7 +161,11 @@ def top(theme):
     # TODO user defined dirs from browser
     for dir in glob(args.exp_root + "/**/results"):
         label = dir.split("/")[-2].strip()
-        r = Results(label, dir, theme)
+        try:
+            r = Results(label, dir, theme)
+        except FileNotFoundError:
+            app.logger.warning("file not found (maybe incompleted 1 epoch):" + dir)
+            continue
         c = r.chart()
         results_list.append(r)
         data += c["datasets"]
@@ -155,7 +179,6 @@ def top(theme):
                            results_list=results_list,
                            chart={"labels": epochs, "datasets": data},
                            conf_table=build_conf_table(results_list, conf_key),
-                           att=results_list[0].att(),
                            color_themes=color_themes)
 
 
