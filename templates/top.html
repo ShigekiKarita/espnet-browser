@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Configuration</h2>
+<div class="table-responsive">
+<table class="table table-striped table-sm table-bordered">
+{{ conf_table | safe }}
+</table>
+</div>
+
+<h2>Attention</h2>
+{% for results in results_list %}
+<li><a href="file://{{ results.dir }}">{{ results.label }}</a></li>
+<img src="data:image/png;base64,{{ results.att(-5) }}", class="img-thumbnail"/>
+{% endfor %}
+
+ <!-- Graphs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+<script>
+var ctx = document.getElementById("myChart");
+new Chart(ctx, {
+    type: 'line',
+    data: {{ chart | tojson | safe }},
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: false
+                }
+            }]
+        },
+        tooltips: {
+             mode: 'index'
+        },
+        legend: {
+            display: true,
+        }
+    }
+});
+</script>
+{% endblock %}
