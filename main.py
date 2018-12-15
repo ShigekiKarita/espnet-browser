@@ -11,12 +11,12 @@ args = parser.parse_args()
 
 
 class Results:
-    def __init__(self, label, dir):
+    def __init__(self, label, dir, theme):
         import os
         from glob import glob
         import json
         self.label = label
-        self.color = str2color(dir)
+        self.color = str2color(dir, theme)
         self.color_s = self.color[1:]
         self.dir = os.path.abspath(dir)
         self.log = json.load(open(dir + "/log", "r"))
@@ -94,9 +94,9 @@ class Results:
         return d
 
 
-themes = ["gist_stern", "rainbow", "gnuplot2"]
+color_themes = ["gist_stern", "rainbow", "gnuplot2", "viridis"]
 
-def str2color(s, theme=themes[-1]):
+def str2color(s, theme=color_themes[-1]):
     """
     :param str s:
     :param str theme: https://matplotlib.org/examples/color/colormaps_reference.html
@@ -123,7 +123,16 @@ def build_conf_table(results_list, conf_keys):
 
 
 @app.route('/')
-def top():
+def index():
+    return top("viridis")
+
+
+@app.route('/color/<theme>')
+def color(theme):
+    return top(theme)
+
+
+def top(theme):
     from glob import glob
     # {% endfor %}
     results_list = []
@@ -132,7 +141,7 @@ def top():
     # TODO user defined dirs from browser
     for dir in glob(args.exp_root + "/**/results"):
         label = dir.split("/")[-2].strip()
-        r = Results(label, dir)
+        r = Results(label, dir, theme)
         c = r.chart()
         results_list.append(r)
         data += c["datasets"]
@@ -146,7 +155,8 @@ def top():
                            results_list=results_list,
                            chart={"labels": epochs, "datasets": data},
                            conf_table=build_conf_table(results_list, conf_key),
-                           att=results_list[0].att())
+                           att=results_list[0].att(),
+                           color_themes=color_themes)
 
 
 if __name__ == "__main__":

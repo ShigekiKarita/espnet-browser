@@ -40,11 +40,16 @@
                   Dashboard <span class="sr-only">(current)</span>
                 </a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <span data-feather="file"></span>
-                  Orders
-                </a>
+              <li class="nav-item dropdown">
+                  <a href="#" class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <span data-feather="edit-3"></span>
+                      Colors
+                  </a>
+                  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      {% for c in color_themes %}
+                      <a class="dropdown-item" href="/color/{{c}}">{{c}}</a>
+                      {% endfor %}
+                  </div>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#">
