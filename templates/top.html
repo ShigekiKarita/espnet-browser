@@ -10,8 +10,29 @@
 
 <h2>Attention</h2>
 {% for results in results_list %}
-<li><a href="file://{{ results.dir }}">{{ results.label }}</a></li>
-<img src="data:image/png;base64,{{ results.att(-5) }}", class="img-thumbnail"/>
+<div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="card">
+    <div class="card-header" role="tab" id="heading{{ results.color_s }}">
+      <h7 class="mb-0">
+        <a class="text-body" data-toggle="collapse" href="#collapse{{ results.color_s }}" role="button" aria-expanded="false" aria-controls="collapse{{ results.color_s }}">
+        {{ results.label }}
+        </a>
+      </h7>
+    </div><!-- /.card-header -->
+    <div id="collapse{{ results.color_s }}" class="collapse" role="tabpanel" aria-labelledby="heading{{ results.color_s }}" data-parent="#accordion">
+      <div class="card-body">
+        <div class="row">
+        {% for f, b in results.att().items() %}
+        <figure class="figure img-fluid">
+          <img src="data:image/png;base64,{{b}}" class="figure-img img-fluid rounded" alt="{{f}}">
+          <figcaption class="figure-caption">{{f}}</figcaption>
+        </figure>
+        {% endfor %}
+        </div>
+      </div><!-- /.card-body -->
+    </div><!-- /.collapse -->
+  </div><!-- /.card -->
+</div><!-- /#accordion -->
 {% endfor %}
 
  <!-- Graphs -->
