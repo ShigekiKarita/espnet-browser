@@ -99,9 +99,9 @@ class Results:
             ]}
 
     def conf(self, keys):
-        ret = f"""<tr id="tr-{self.label}", style="background-color:{self.rgba}",
+        ret = f"""<tr id="{Global.conf_table_row_prefix}{self.label}" style="background-color:{self.rgba}"
                       onclick="chartToggleTable('{self.label}', ['{self.train_label}', '{self.valid_label}'])">"""
-        ret += f"""<td id="td-{self.label}", style="background-color:{self.color}"></td>"""
+        ret += f"""<td id="{Global.conf_table_val_prefix}{self.label}" style="background-color:{self.color}"></td>"""
         for k in keys:
             ret += "<td>{}</td>".format(self.config[k])
         return ret + "</tr>"
@@ -121,9 +121,15 @@ class Results:
         return d
 
 
-color_themes = ["gist_stern", "rainbow", "gnuplot2", "viridis"]
+# TODO put these globals in any other place
+class Global:
+    color_themes = ["gist_stern", "rainbow", "gnuplot2", "viridis"]
+    conf_table_id = "conf_table"
+    conf_table_row_prefix = "conf_tr_"
+    conf_table_val_prefix = "conf_td_"
 
-def str2color(s, theme=color_themes[-1]):
+
+def str2color(s, theme):
     """
     :param str s:
     :param str theme: https://matplotlib.org/examples/color/colormaps_reference.html
@@ -191,7 +197,7 @@ def top(theme):
                            results_list=results_list,
                            chart={"labels": epochs, "datasets": data},
                            conf_table=build_conf_table(results_list, conf_key),
-                           color_themes=color_themes)
+                           Global=Global)
 
 
 if __name__ == "__main__":
