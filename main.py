@@ -124,9 +124,13 @@ class Results:
 # TODO put these globals in any other place
 class Global:
     color_themes = ["gist_stern", "rainbow", "gnuplot2", "viridis"]
+
     conf_table_id = "conf_table"
     conf_table_row_prefix = "conf_tr_"
     conf_table_val_prefix = "conf_td_"
+
+    attention_accordion_id = "att_accordion"
+    attention_accordion_prefix = "att_accordion_"
 
 
 def str2color(s, theme):

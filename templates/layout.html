@@ -19,36 +19,6 @@
     </head>
 
     <body>
-        <script>
-         function searchInput() {
-             // Declare variables
-             let input = document.getElementById('searchInput').value;
-
-             // TODO filter graph
-
-             // filter Configuration table
-             let table = document.getElementById("{{ Global.conf_table_id }}");
-             if (table == null) return;
-             prefix_size = "{{Global.conf_table_row_prefix}}".length;
-             let tr_list = table.getElementsByTagName('tr');
-             console.log("tr:" + tr_list.length);
-             for (let tr of tr_list) {
-                 if (!tr.id.startsWith("{{ Global.conf_table_row_prefix }}")) {
-                     continue;
-                 }
-                 let value = tr.id.slice(prefix_size);
-                 // TODO use match?
-                 if (value.match(input) != null) {
-                     tr.style.display = "";
-                     console.log("found: " + value);
-                 } else {
-                     console.log("filter: " + value);
-                     tr.style.display = "none";
-                 }
-             }
-             // TODO filter attention
-         }
-        </script>
         <nav class="navbar navbar-dark fixed-top bg-info flex-md-nowrap p-0 shadow">
             <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">ESPnet</a>
             <input class="form-control form-control-dark w-100" type="text"
