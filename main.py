@@ -116,6 +116,7 @@ class Results:
         for a in sorted(self.atts):
             if "ep.%d." % self.config["epoch"] in a and "src_attn" in a:
                 b = b64encode(open(a, "rb").read()).decode('utf-8')
+                # b = b64encode(open_img(a)).decode("utf-8")
                 f = basename(a)
                 d[f] = b
         return d
@@ -131,6 +132,22 @@ class Global:
 
     attention_accordion_id = "att_accordion"
     attention_accordion_prefix = "att_accordion_"
+
+    max_image_width = 640
+
+
+def open_img(path):
+    import io
+    import numpy
+    from PIL import Image
+    img = Image.open(path, "r")
+    if img.width > Global.max_image_width:
+        ratio = Global.max_image_width / img.width
+        size = (numpy.array(img.size) * ratio).astype(int)
+        img = img.resize(size)
+    ret = io.BytesIO()
+    img.save(ret, format='png')
+    return ret.getvalue()
 
 
 def str2color(s, theme):
