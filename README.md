@@ -2,6 +2,13 @@
 
 browsing tool for ESPnet experiments
 
+# requirements
+
+- python >= 3.6
+- Flask >= 1.0.2
+- matplotlib >=3.0.1
+
+
 ## how to use
 
 ```bash
