@@ -31,6 +31,8 @@ class Results:
         import json
         self.label = label
         self.color = str2color(dir, theme)
+        c = mpl.colors.hex2color(self.color)
+        self.rgba = "rgba({}, {}, {}, 0.05)".format(int(255 * c[0]), int(255 * c[1]), int(255 * c[2]))
         self.color_s = self.color[1:]
         self.dir = os.path.abspath(dir)
         self.log = json.load(open(dir + "/log", "r"))
@@ -41,7 +43,11 @@ class Results:
                 self.config["valid_acc"] = log["validation/main/acc"]
                 self.config["train_acc"] = log["main/acc"]
                 self.config["epoch"] = log["epoch"]
+                self.config["elapsed_time"] = log["elapsed_time"]
+                self.config["hour"] = log["elapsed_time"] / 3600
         self.atts = glob(dir + "/att_ws/*.png")
+        self.train_label = self.label + "/train/acc"
+        self.valid_label = self.label + "/valid/acc"
 
     def accumulate(self, key):
         ret = []
@@ -62,38 +68,42 @@ class Results:
                 train_acc.append(log["main/acc"])
                 valid_acc.append(log["validation/main/acc"])
                 epoch_label.append(log["epoch"])
-
         return {
             "labels": epoch_label,
             "datasets": [
                 {
-                    "label": self.label + "/train/acc",
+                    "label": self.train_label,
                     "data": train_acc,
                     "lineTension": 0,
                     "backgroundColor": 'transparent',
                     "borderColor": self.color,
                     "borderWidth": 2,
                     "borderDash": [2, 2],  # for dash line: - - -
-                    "pointBackgroundColor": self.color # '#007bff'
+                    "pointBackgroundColor": self.color,
+                    "tableBackgroundColor": self.rgba,
+                    "isTrain": True,
+                    "hidden": True
                 },
                 {
-                    "label": self.label + "/valid/acc",
+                    "label": self.valid_label,
                     "data": valid_acc,
                     "lineTension": 0,
                     "backgroundColor": 'transparent',
                     "borderColor": self.color,
                     "borderWidth": 2,
-                    "pointBackgroundColor": self.color
+                    "pointBackgroundColor": self.color,
+                    "tableBackgroundColor": self.rgba,
+                    "isTrain": False,
+                    "hidden": False
                 }
             ]}
 
     def conf(self, keys):
-        c = mpl.colors.hex2color(self.color)
-        rgba = "rgba({}, {}, {}, 0.05)".format(int(255 * c[0]), int(255 * c[1]), int(255 * c[2]))
-        ret = "<tr>"
-        ret += "<td style=\"background-color:{}\"></td>".format(self.color)
+        ret = f"""<tr id="tr-{self.label}", style="background-color:{self.rgba}",
+                      onclick="chartToggleTable('{self.label}', ['{self.train_label}', '{self.valid_label}'])">"""
+        ret += f"""<td id="td-{self.label}", style="background-color:{self.color}"></td>"""
         for k in keys:
-            ret += "<td style=\"background-color:{}\">{}</td>".format(rgba, self.config[k])
+            ret += "<td>{}</td>".format(self.config[k])
         return ret + "</tr>"
 
     def att(self, i=0):
@@ -163,6 +173,8 @@ def top(theme):
         label = dir.split("/")[-2].strip()
         try:
             r = Results(label, dir, theme)
+            if "valid_acc" not in r.config:
+                continue
         except FileNotFoundError:
             app.logger.warning("file not found (maybe incompleted 1 epoch):" + dir)
             continue
@@ -171,9 +183,9 @@ def top(theme):
         data += c["datasets"]
         if len(c["labels"]) > len(epochs):
             epochs = c["labels"]
-
+    results_list = sorted(results_list, key=lambda x: -x.config["valid_acc"])
     # TODO user defined keys from browser
-    conf_key = ["epoch", "train_acc", "valid_acc", "opt", "lr_init",
+    conf_key = ["hour", "epoch", "train_acc", "valid_acc", "opt", "lr_init", "ninit",
                 "batch_size", "adim", "elayers", "eunits", "dlayers", "dunits", "dir"]
     return render_template('top.html', title='top',
                            results_list=results_list,
