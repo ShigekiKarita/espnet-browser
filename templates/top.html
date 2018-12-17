@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <canvas class="my-4 w-100" id="myChart" width="900" height="600"></canvas>
+    <canvas class="my-4 w-100" id="myChart" width="900" height="300"></canvas>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
     <script>
@@ -70,13 +70,7 @@
          filterElements(trs, input,
                         "{{ Global.conf_table_row_prefix }}");
 
-         // filter Attention accordion
-         let cards = document.getElementById("accordion") // FIXME: use Global.attention_accordion_id
-                             .getElementsByClassName('card');
-         filterElements(cards, input,
-                        "{{ Global.attention_accordion_prefix }}");
-
-         // TODO filter chart
+         // filter chart
          for (let d of chart.data.datasets) {
              if (d.label.match(input)) {
                  if (d.isTrain && !showTrain) continue;
@@ -139,35 +133,6 @@
             {{ conf_table | safe }}
         </table>
     </div>
-
-    <h2>Attention</h2>
-    <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
-        {% for results in results_list %}
-        <div class="card" style="background-color: {{ results.rgba }}" id="{{ Global.attention_accordion_prefix }}{{ results.label }}">
-            <div class="card-header" role="tab" id="heading{{ results.color_s }}">
-                <h8 class="mb-0">
-                    <a class="text-body" data-toggle="collapse" href="#collapse{{ results.color_s }}" role="button"
-                       aria-expanded="false" aria-controls="collapse{{ results.color_s }}">
-                        {{ results.label }}
-                    </a>
-                </h8>
-            </div><!-- /.card-header -->
-            <div id="collapse{{ results.color_s }}" class="collapse" role="tabpanel"
-                 aria-labelledby="heading{{ results.color_s }}" data-parent="#accordion">
-                <div class="card-body">
-                    <div class="row">
-                        {% for f, b in results.att().items() %}
-                        <figure class="figure img-fluid">
-                            <img src="data:image/png;base64,{{b}}" class="figure-img img-fluid rounded" alt="{{f}}">
-                            <figcaption class="figure-caption">{{f}}</figcaption>
-                        </figure>
-                        {% endfor %}
-                    </div>
-                </div><!-- /.card-body -->
-            </div><!-- /.collapse -->
-        </div><!-- /.card -->
-        {% endfor %}
-    </div><!-- /#accordion -->
 
 </main>
 {% endblock %}

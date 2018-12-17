@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% block content %}
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+
+    <script>
+     function filterElements(elements, input, prefix) {
+         let prefix_size = prefix.length;
+         for (let tr of elements) {
+             if (!tr.id.startsWith(prefix)) {
+                 continue;
+             }
+             let value = tr.id.slice(prefix_size);
+             if (value.match(input)) {
+                 tr.style.display = "";
+             } else {
+                 tr.style.display = "none";
+             }
+         }
+     }
+
+     function searchInput() {
+         // Declare variables
+         let input = document.getElementById('searchInput').value;
+
+         // filter Configuration table
+         let trs = document.getElementById("{{ Global.conf_table_id }}")
+                           .getElementsByTagName('tr');
+         filterElements(trs, input,
+                        "{{ Global.conf_table_row_prefix }}");
+
+         // filter Attention accordion
+         let cards = document.getElementById("accordion") // FIXME: use Global.attention_accordion_id
+                             .getElementsByClassName('card');
+         filterElements(cards, input,
+                        "{{ Global.attention_accordion_prefix }}");
+     }
+
+    </script>
+
+    <h2>Configuration</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm table-bordered" id="{{ Global.conf_table_id }}">
+            {{ conf_table | safe }}
+        </table>
+    </div>
+
+
+    <h2>Attention</h2>
+    <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
+        {% for results in results_list %}
+        <div class="card" style="background-color: {{ results.rgba }}" id="{{ Global.attention_accordion_prefix }}{{ results.label }}">
+            <div class="card-header" role="tab" id="heading{{ results.color_s }}">
+                <h8 class="mb-0">
+                    <a class="text-body" data-toggle="collapse" href="#collapse{{ results.color_s }}" role="button"
+                       aria-expanded="false" aria-controls="collapse{{ results.color_s }}">
+                        {{ results.label }}
+                    </a>
+                </h8>
+            </div><!-- /.card-header -->
+            <div id="collapse{{ results.color_s }}" class="collapse" role="tabpanel"
+                 aria-labelledby="heading{{ results.color_s }}" data-parent="#accordion">
+                <div class="card-body">
+                    <div class="row">
+                        {% for f, b in results.att().items() %}
+                        <figure class="figure img-fluid">
+                            <img src="data:image/png;base64,{{b}}" class="figure-img img-fluid rounded" alt="{{f}}">
+                            <figcaption class="figure-caption">{{f}}</figcaption>
+                        </figure>
+                        {% endfor %}
+                    </div>
+                </div><!-- /.card-body -->
+            </div><!-- /.collapse -->
+        </div><!-- /.card -->
+        {% endfor %}
+    </div><!-- /#accordion -->
+
+</main>
+{% endblock %}

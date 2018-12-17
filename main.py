@@ -213,10 +213,46 @@ def top(theme):
     results_list = sorted(results_list, key=lambda x: -x.config["valid_acc"])
     # TODO user defined keys from browser
     conf_key = ["hour", "epoch", "train_acc", "valid_acc", "opt", "lr_init", "ninit",
-                "batch_size", "adim", "elayers", "eunits", "dlayers", "dunits", "dir"]
+                "ngpu", "batch_size", "aheads", "adim", "elayers", "eunits", "dlayers", "dunits", "dir"]
     return render_template('top.html', title='top',
                            results_list=results_list,
                            chart={"labels": epochs, "datasets": data},
+                           conf_table=build_conf_table(results_list, conf_key),
+                           Global=Global)
+
+
+@app.route('/attention')
+def attention_top():
+    return attention("viridis")
+
+@app.route('/attention/<theme>')
+def attention(theme):
+    from glob import glob
+    # {% endfor %}
+    results_list = []
+    data = []
+    epochs = []
+    # TODO user defined dirs from browser
+    for dir in glob(args.exp_root + "/**/results"):
+        label = dir.split("/")[-2].strip()
+        try:
+            r = Results(label, dir, theme)
+            if "valid_acc" not in r.config:
+                continue
+        except FileNotFoundError:
+            app.logger.warning("file not found (maybe incompleted 1 epoch):" + dir)
+            continue
+        c = r.chart()
+        results_list.append(r)
+        data += c["datasets"]
+        if len(c["labels"]) > len(epochs):
+            epochs = c["labels"]
+    results_list = sorted(results_list, key=lambda x: -x.config["valid_acc"])
+    # TODO user defined keys from browser
+    conf_key = ["hour", "epoch", "train_acc", "valid_acc", "opt", "lr_init", "ninit",
+                "ngpu", "batch_size", "aheads", "adim", "elayers", "eunits", "dlayers", "dunits", "dir"]
+    return render_template('attention.html', title='attention',
+                           results_list=results_list,
                            conf_table=build_conf_table(results_list, conf_key),
                            Global=Global)
 
